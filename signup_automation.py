@@ -180,99 +180,108 @@ def main():
         # === MONTH SELECTION ===
         # Based on the HTML: BirthMonthDropdown is a button with role="combobox"
         try:
-            # Use Playwright locators for more reliable selection
             month_dropdown = page.locator('#BirthMonthDropdown')
             if month_dropdown.count() > 0:
-                # Click to open the dropdown
-                month_dropdown.click()
-                print("Clicked month dropdown")
+                # Focus on the dropdown and press key to open
+                month_dropdown.focus()
+                time.sleep(0.5)
+                page.keyboard.press('Space')
+                print("Opened month dropdown with Space")
                 time.sleep(1)
                 
-                # Try multiple selectors for the dropdown options
-                # First try: button[role="option"]
-                month_option = page.locator(f'button[role="option"]:has-text("{month_name}")')
-                if month_option.count() > 0:
-                    month_option.first.click()
-                    print(f"Selected month: {month_name}")
-                else:
-                    # Second try: div[role="option"] 
-                    month_option = page.locator(f'div[role="option"]:has-text("{month_name}")')
-                    if month_option.count() > 0:
-                        month_option.first.click()
-                        print(f"Selected month: {month_name}")
-                    else:
-                        # Third try: li element
-                        month_option = page.locator(f'li:has-text("{month_name}")')
-                        if month_option.count() > 0:
-                            month_option.first.click()
-                            print(f"Selected month: {month_name}")
-                        else:
-                            # Fourth try: search in the opened popup using text
-                            month_option = page.locator(f'text="{month_name}"')
-                            if month_option.count() > 0:
-                                month_option.first.click()
-                                print(f"Selected month: {month_name}")
+                # Navigate to the correct month using arrow keys
+                # Start from top and navigate to the month index
+                for _ in range(month_index):
+                    page.keyboard.press('ArrowDown')
+                    time.sleep(0.1)
+                time.sleep(0.3)
+                page.keyboard.press('Enter')
+                print(f"Selected month: {month_name}")
         except Exception as e:
             print(f"Month selection failed: {e}")
+            # Fallback: Try direct click
+            try:
+                month_dropdown = page.locator('#BirthMonthDropdown')
+                if month_dropdown.count() > 0:
+                    month_dropdown.click(force=True, timeout=5000)
+                    time.sleep(1)
+                    # Type to search
+                    page.keyboard.type(month_name[:3])
+                    time.sleep(0.5)
+                    page.keyboard.press('Enter')
+                    print(f"Selected month via typing: {month_name}")
+            except Exception as e2:
+                print(f"Month fallback also failed: {e2}")
         
         # === DAY SELECTION ===
         # Based on the HTML: BirthDayDropdown is a button with role="combobox"
         try:
             day_dropdown = page.locator('#BirthDayDropdown')
             if day_dropdown.count() > 0:
-                # Click to open the dropdown
+                # Click the dropdown to open it
                 day_dropdown.click()
                 print("Clicked day dropdown")
-                time.sleep(1)
+                time.sleep(2)  # Wait for dropdown to fully open
                 
-                # Try multiple selectors for day options
-                day_option = page.locator(f'button[role="option"]:has-text("{day}")')
-                if day_option.count() > 0:
-                    day_option.first.click()
+                # Try to find and click the day option
+                day_options = page.locator(f'text="{day}"')
+                if day_options.count() > 0:
+                    day_options.first.click()
                     print(f"Selected day: {day}")
                 else:
-                    # Try div[role="option"]
-                    day_option = page.locator(f'div[role="option"]:has-text("{day}")')
-                    if day_option.count() > 0:
-                        day_option.first.click()
-                        print(f"Selected day: {day}")
-                    else:
-                        # Try li
-                        day_option = page.locator(f'li:has-text("{day}")')
-                        if day_option.count() > 0:
-                            day_option.first.click()
-                            print(f"Selected day: {day}")
-                        else:
-                            # Try text
-                            day_option = page.locator(f'text="{day}"')
-                            if day_option.count() > 0:
-                                day_option.first.click()
-                                print(f"Selected day: {day}")
+                    # Try typing the number and pressing enter
+                    page.keyboard.type(str(day))
+                    time.sleep(0.3)
+                    page.keyboard.press('Enter')
+                    print(f"Selected day via keyboard: {day}")
         except Exception as e:
             print(f"Day selection failed: {e}")
+            try:
+                # Alternative: Try using aria-label approach
+                day_dropdown = page.locator('button[aria-label="Birth day"]')
+                if day_dropdown.count() > 0:
+                    day_dropdown.click()
+                    time.sleep(1)
+                    page.keyboard.type(str(day))
+                    time.sleep(0.5)
+                    page.keyboard.press('Enter')
+                    print(f"Selected day via keyboard: {day}")
+            except:
+                pass
         
         # === YEAR INPUT ===
         # Based on the HTML: Year input has id="floatingLabelInput21"
         try:
+            # First try the exact ID from the HTML
             year_input = page.locator('#floatingLabelInput21')
             if year_input.count() > 0:
-                year_input.first.fill(str(year))
+                year_input.click()
+                time.sleep(0.5)
+                year_input.fill(str(year))
                 print(f"Entered year: {year}")
             else:
-                # Try alternative selectors
+                # Try by name attribute
                 year_input = page.locator('input[name="BirthYear"]')
                 if year_input.count() > 0:
-                    year_input.first.fill(str(year))
+                    year_input.click()
+                    time.sleep(0.5)
+                    year_input.fill(str(year))
                     print(f"Entered year: {year}")
                 else:
+                    # Try by aria-label
                     year_input = page.locator('input[aria-label="Birth year"]')
                     if year_input.count() > 0:
-                        year_input.first.fill(str(year))
+                        year_input.click()
+                        time.sleep(0.5)
+                        year_input.fill(str(year))
                         print(f"Entered year: {year}")
                     else:
+                        # Try any number input in the form
                         year_input = page.locator('input[type="number"]')
                         if year_input.count() > 0:
-                            year_input.first.fill(str(year))
+                            year_input.click()
+                            time.sleep(0.5)
+                            year_input.fill(str(year))
                             print(f"Entered year: {year}")
         except Exception as e:
             print(f"Year input failed: {e}")
