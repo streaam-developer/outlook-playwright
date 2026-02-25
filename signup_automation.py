@@ -177,74 +177,105 @@ def main():
         
         print(f"Birth date: Month={month_name}, Day={day}, Year={year}")
         
-        # Try to find and fill month - click dropdown first, then select from list
+        # === MONTH SELECTION ===
+        # Based on the HTML: BirthMonthDropdown is a button with role="combobox"
         try:
-            # Click on month dropdown to open the list
-            month_dropdown = page.query_selector('#BirthMonthDropdown')
-            if month_dropdown:
+            # Use Playwright locators for more reliable selection
+            month_dropdown = page.locator('#BirthMonthDropdown')
+            if month_dropdown.count() > 0:
+                # Click to open the dropdown
                 month_dropdown.click()
                 print("Clicked month dropdown")
                 time.sleep(1)
-                # Select the month from the list
-                month_option = page.query_selector(f'li[data-month="{month_index}"]')
-                if not month_option:
-                    month_option = page.query_selector(f'text={month_name}')
-                if month_option:
-                    month_option.click()
+                
+                # Try multiple selectors for the dropdown options
+                # First try: button[role="option"]
+                month_option = page.locator(f'button[role="option"]:has-text("{month_name}")')
+                if month_option.count() > 0:
+                    month_option.first.click()
                     print(f"Selected month: {month_name}")
+                else:
+                    # Second try: div[role="option"] 
+                    month_option = page.locator(f'div[role="option"]:has-text("{month_name}")')
+                    if month_option.count() > 0:
+                        month_option.first.click()
+                        print(f"Selected month: {month_name}")
+                    else:
+                        # Third try: li element
+                        month_option = page.locator(f'li:has-text("{month_name}")')
+                        if month_option.count() > 0:
+                            month_option.first.click()
+                            print(f"Selected month: {month_name}")
+                        else:
+                            # Fourth try: search in the opened popup using text
+                            month_option = page.locator(f'text="{month_name}"')
+                            if month_option.count() > 0:
+                                month_option.first.click()
+                                print(f"Selected month: {month_name}")
         except Exception as e:
             print(f"Month selection failed: {e}")
-            # Try alternative - type in the field
-            try:
-                month_input = page.query_selector('#BirthMonthDropdown')
-                if month_input:
-                    month_input.fill(month_name)
-                    print(f"Entered month: {month_name}")
-            except:
-                pass
         
-        # Try to find and fill day - click dropdown first, then select from list
+        # === DAY SELECTION ===
+        # Based on the HTML: BirthDayDropdown is a button with role="combobox"
         try:
-            # Click on day dropdown to open the list
-            day_dropdown = page.query_selector('#BirthDayDropdown')
-            if day_dropdown:
+            day_dropdown = page.locator('#BirthDayDropdown')
+            if day_dropdown.count() > 0:
+                # Click to open the dropdown
                 day_dropdown.click()
                 print("Clicked day dropdown")
                 time.sleep(1)
-                # Select the day from the list
-                day_option = page.query_selector(f'li[data-day="{day}"]')
-                if not day_option:
-                    day_option = page.query_selector(f'text={day}')
-                if day_option:
-                    day_option.click()
+                
+                # Try multiple selectors for day options
+                day_option = page.locator(f'button[role="option"]:has-text("{day}")')
+                if day_option.count() > 0:
+                    day_option.first.click()
                     print(f"Selected day: {day}")
+                else:
+                    # Try div[role="option"]
+                    day_option = page.locator(f'div[role="option"]:has-text("{day}")')
+                    if day_option.count() > 0:
+                        day_option.first.click()
+                        print(f"Selected day: {day}")
+                    else:
+                        # Try li
+                        day_option = page.locator(f'li:has-text("{day}")')
+                        if day_option.count() > 0:
+                            day_option.first.click()
+                            print(f"Selected day: {day}")
+                        else:
+                            # Try text
+                            day_option = page.locator(f'text="{day}"')
+                            if day_option.count() > 0:
+                                day_option.first.click()
+                                print(f"Selected day: {day}")
         except Exception as e:
             print(f"Day selection failed: {e}")
-            # Try alternative - type in the field
-            try:
-                day_input = page.query_selector('#BirthDayDropdown')
-                if day_input:
-                    day_input.fill(str(day))
-                    print(f"Entered day: {day}")
-            except:
-                pass
         
-        # Try to find and fill year input - can type directly
+        # === YEAR INPUT ===
+        # Based on the HTML: Year input has id="floatingLabelInput21"
         try:
-            year_input = page.query_selector('#floatingLabelInput24')
-            if year_input:
-                year_input.fill(str(year))
+            year_input = page.locator('#floatingLabelInput21')
+            if year_input.count() > 0:
+                year_input.first.fill(str(year))
                 print(f"Entered year: {year}")
+            else:
+                # Try alternative selectors
+                year_input = page.locator('input[name="BirthYear"]')
+                if year_input.count() > 0:
+                    year_input.first.fill(str(year))
+                    print(f"Entered year: {year}")
+                else:
+                    year_input = page.locator('input[aria-label="Birth year"]')
+                    if year_input.count() > 0:
+                        year_input.first.fill(str(year))
+                        print(f"Entered year: {year}")
+                    else:
+                        year_input = page.locator('input[type="number"]')
+                        if year_input.count() > 0:
+                            year_input.first.fill(str(year))
+                            print(f"Entered year: {year}")
         except Exception as e:
             print(f"Year input failed: {e}")
-            # Try by label
-            try:
-                year_input = page.query_selector('input[aria-label="Year"]')
-                if year_input:
-                    year_input.fill(str(year))
-                    print(f"Entered year: {year}")
-            except:
-                pass
         
         # Click Next button for birth date
         print("Searching for Next button...")
