@@ -5,7 +5,11 @@ from playwright.sync_api import sync_playwright
 
 def generate_random_email():
     """Generate a random email with 10 letters and numbers combination"""
-    username = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
+    # First 2 characters must be alphabets
+    first_two = ''.join(random.choices(string.ascii_lowercase, k=2))
+    # Remaining 8 characters can be letters and numbers
+    remaining = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
+    username = first_two + remaining
     return f"{username}@outlook.com"
 
 def main():
