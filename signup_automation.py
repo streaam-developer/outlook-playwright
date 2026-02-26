@@ -313,6 +313,38 @@ def main():
         else:
             print("Could not find Next button!")
         
+        # Wait 2-3 seconds for the "Press and hold" element to appear
+        print("Waiting 2-3 seconds for press and hold verification...")
+        time.sleep(2.5)
+        
+        # Handle "Press and hold" element for 8 seconds
+        print("Looking for Press and hold button...")
+        try:
+            # Try to find the press and hold button by text
+            press_hold_button = page.locator('text="Press and hold"')
+            if press_hold_button.count() > 0:
+                print("Found Press and hold button, holding for 8 seconds...")
+                # Press and hold for 8 seconds using mouse
+                press_hold_button.hover()
+                page.mouse.down()
+                time.sleep(8)
+                page.mouse.up()
+                print("Released after 8 seconds")
+            else:
+                # Try by ID if available
+                press_hold_button = page.locator('#hkIMulioPburIjw')
+                if press_hold_button.count() > 0:
+                    print("Found Press and hold button by ID, holding for 8 seconds...")
+                    press_hold_button.hover()
+                    page.mouse.down()
+                    time.sleep(8)
+                    page.mouse.up()
+                    print("Released after 8 seconds")
+                else:
+                    print("Press and hold button not found, skipping...")
+        except Exception as e:
+            print(f"Press and hold handling failed: {e}")
+        
         # Step 9: Wait 4-5 seconds for name page
         print("Waiting 4 seconds for name page...")
         time.sleep(4)
